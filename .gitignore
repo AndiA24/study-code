@@ -6,6 +6,9 @@
 # Object files
 *.o
 
+# VS-Code Data
+.vscode
+
 # folders
 build/
 obj/
