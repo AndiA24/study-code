@@ -3,6 +3,9 @@
 *.exe
 *.app
 
+# Build Files
+build/
+
 # Object files
 *.o
 
