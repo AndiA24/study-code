@@ -1,7 +1,7 @@
 #include<stdio.h>
 
 int main (void){
-    char shipClass[] = "NCC-1701-D";
+    char shipClass[30] = "";
     int crewMembers = 1912;
     int missionDays = 50;
     unsigned long traveledDistance = 30000000000000000;
@@ -10,6 +10,14 @@ int main (void){
 
     printf("Spaceship Dashboard\n");
     printf("------------------------------------\n\n");
+    printf("Enter the Ship Class:");
+    scanf("%s", shipClass);
+    printf("Enter Amount of Crew Members:");
+    scanf("%d", &crewMembers);
+    printf("Enter the amount of Mission Days:");
+    scanf("%d", &missionDays);
+    printf("\n\n");
+
     printf("%-50s %s\n", "Ship Class:",shipClass);
     printf("%-50s %d\n","Crew Members:",crewMembers);
     printf("%-50s %d\n","Mission Days:", missionDays);
