@@ -1,11 +1,17 @@
 #include<stdio.h>
+
+#define MASK_ERROR 0b10000000
+#define MASK_OVERTEMP 0b01000000
+#define MASK_LOW_VOLTAGE 0b00100000
+#define MASK_SENSOR_VALUE 0b00001111
+
 int main (void){
     char sensorValue = 0xA7;
     unsigned int measureValue;
     printf("Sensorstatus:\n\n");
 
     printf("Fehler: ");
-    if (0b10000000 & sensorValue){
+    if (MASK_ERROR & sensorValue){
         printf("Ja\n");
     }
     else{
@@ -13,7 +19,7 @@ int main (void){
     }
 
     printf("Temperatur: ");
-    if(0b01000000 & sensorValue){
+    if(MASK_OVERTEMP & sensorValue){
         printf("Übertemperatur\n");
     }
     else{
@@ -21,7 +27,7 @@ int main (void){
     }
 
     printf("Spannung: ");
-    if(0b00100000 & sensorValue){
+    if(MASK_LOW_VOLTAGE & sensorValue){
         printf("Unterspannung\n");
     }
     else{
@@ -29,7 +35,7 @@ int main (void){
     }
 
     printf("Messwert: ");
-    measureValue = (0b00001111 & sensorValue);
+    measureValue = (MASK_SENSOR_VALUE & sensorValue);
     printf("%i\n", measureValue);
 
     return 0;
