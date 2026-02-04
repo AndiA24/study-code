@@ -1,0 +1,49 @@
+#include<stdio.h>
+
+int main(){
+    char opperator;
+    float firstNum;
+    float secondNum;
+    float result;
+
+    while(1){
+        char opperator = 0;
+        printf("------------------C-Console Calculator------------------\n");
+        printf("Please chose the Opperator you want to use:\nAddition: +\n Subtraction: -\n Multiplication: *\n Division: /\n\n");
+        if (scanf(" %c", &opperator) == 1){
+            if(!(opperator == '+' || opperator == '-' || opperator == '*' || opperator == '/')){
+                printf("Ungültige Eingabe: Es sind nur die Opperatoren '+', '-', '*' und '/' erlaubt\n");                
+            }
+            else{
+                while (getchar() != '\n');
+                if (opperator != 0){
+                    printf("Please enter the first Number: ");
+                    scanf("%f", &firstNum);
+                    while (getchar() != '\n');
+                    printf("Please enter the second Number: ");
+                    scanf("%f", &secondNum);
+                    if(opperator == '/' && (secondNum == 0)){
+                        printf("You cant divide a Number by zero.\n");
+                    }
+                    else{
+                        switch(opperator){
+                            case '+':
+                                result = firstNum + secondNum;
+                                break;
+                            case '-':
+                                result = firstNum - secondNum;
+                                break;
+                            case '*':
+                                result = firstNum * secondNum;
+                                break;
+                            case '/':
+                                    result = firstNum / secondNum;
+                        }
+                        printf("The Result of your Calculation is: %f %c %f = %f\n", firstNum, opperator, secondNum, result);
+                    }
+                }
+            }
+        }
+    }
+    return 0;
+}
