@@ -2,8 +2,7 @@
 
 int main(){
     int myNumbers[] = {10,20,30,40,50};
-    int *pNum1 = myNumbers;
-    pNum1 ++;
+    int *pNum1 = myNumbers[1];
     int *pNum2 = pNum1 + 3;
     int diff = pNum2 - pNum1;
 
