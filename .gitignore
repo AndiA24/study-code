@@ -2,6 +2,7 @@
 *.out
 *.exe
 *.app
+*.bin
 
 # Build Files
 build/
@@ -11,6 +12,11 @@ build/
 
 # VS-Code Data
 .vscode
+# Visual Studio artifacts
+*.v2
+*.vsidx
+*.suo
+DocumentLayout.json
 
 # folders
 build/
