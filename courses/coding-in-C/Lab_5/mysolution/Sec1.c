@@ -8,7 +8,11 @@ int main(void) {
     // TODO: complete the output statements
     printf("x = %d\n", x);
     printf("x via p = %d\n", *p);
-    printf("x via pp = %d\n", *p);
+    printf("x via pp = %d\n", **pp);
+
+    **pp = 42;
+
+    printf("x = %d\n", x);    
 
     return 0;
 }
