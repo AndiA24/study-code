@@ -10,11 +10,11 @@ void clear_buffer(){
 void check_paliandrome(char input[], char *p_answer){
     int lenght = strlen(input);
     // printf("Lenght: %d", lenght);
-    for(int i = 0; i < lenght; i++){
-        input[i] = tolower(input[i]);
-    }
+    //for(int i = 0; i < lenght; i++){
+    //    input[i] = tolower(input[i]);
+    //}
     for(int i = 0; i < (int)(lenght / 2); i++){
-        if(input[i] != input[(lenght - i - 1)]){
+        if(tolower(input[i]) != tolower(input[(lenght - i - 1)])){
             strcpy(p_answer, "Your Input is not a paliandrome");
             return;
         }
