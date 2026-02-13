@@ -7,7 +7,7 @@ void clear_buffer(){
     while((c = getchar()) != '\n');
 }
 
-void check_paliandrome(char input[], char *p_answer){
+void check_palindrome(char input[], char *p_answer){
     int lenght = strlen(input);
     // printf("Lenght: %d", lenght);
     //for(int i = 0; i < lenght; i++){
@@ -15,11 +15,11 @@ void check_paliandrome(char input[], char *p_answer){
     //}
     for(int i = 0; i < (int)(lenght / 2); i++){
         if(tolower(input[i]) != tolower(input[(lenght - i - 1)])){
-            strcpy(p_answer, "Your Input is not a paliandrome");
+            strcpy(p_answer, "Your Input is not a palindrome");
             return;
         }
     }
-    strcpy(p_answer, "Your Input is a paliandrome");
+    strcpy(p_answer, "Your Input is a palindrome");
     return;
 }
 
@@ -39,7 +39,7 @@ int main(){
     
     printf("Your Input: %s\n", input);
 
-    check_paliandrome(input, p_answer);
+    check_palindrome(input, p_answer);
     printf("%s\n", answer);
 
     return 0;
