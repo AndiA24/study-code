@@ -5,15 +5,14 @@
 int main(){
     int field[10] = {0};
     int temp_field[sizeof(field)/sizeof(field[0])] = {0};
+    int *ptr_field = field;
+    int *ptr_temp_field = temp_field;
     unsigned short int steps;
     field[2] = 1;
     field[4] = 1;
     field[6] = 1;
-    int *ptr_field = field;
-    int *ptr_temp_field = temp_field;
-    srand(time(NULL));
-
     steps = 10;
+    srand(time(NULL));
 
     for(int j = 0; j < (sizeof(field)/sizeof(field[0])); j++){
         printf("%d ", field[j]);
