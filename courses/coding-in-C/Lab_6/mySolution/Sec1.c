@@ -21,11 +21,10 @@ struct Sensor{
     int object_detection[SAMPLES];
     struct DetectionInterval *ptr_head;
 };
-
-struct fusionInterval{
-    float start;
-    float end;
-    struct fusionInterval *ptr_head;
+struct DataFusion{
+    float time[SAMPLES];
+    char object_detection[SAMPLES];
+    struct DetectionInterval *ptr_head;
 };
 
 int readSensorData(char *ptr_path, struct Sensor *ptr_sensor){
@@ -52,21 +51,31 @@ void checkDetection(struct Sensor *ptr_sensor){
     }
 }
 
-void dataFusion(struct Sensor *ptr_sensor1, struct Sensor *ptr_sensor2, char *ptr_fusion){
+void dataFusion(struct Sensor *ptr_sensor1, struct Sensor *ptr_sensor2, struct DataFusion *ptr_fusion){
     for (int i = 0; i < SAMPLES; i++){
         if (ptr_sensor1->object_detection[i] && ptr_sensor2->object_detection[i])
         {
-            *(ptr_fusion + i) = 1;
+            ptr_fusion->object_detection[i] = 1;
         }
         else{
-            *(ptr_fusion + i) = 0;
+            ptr_fusion->object_detection[i] = 0;
         }
+        ptr_fusion->time[i] = ptr_sensor1->data[i].time;
     }
 }
 
-void insertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionInterval *ptr_nnode, struct Sensor *ptr_sensor){
+void sensorInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionInterval *ptr_nnode, struct Sensor *ptr_sensor){
     if (!ptr_node){ // First element
         ptr_sensor->ptr_head = ptr_nnode;
+    }
+    else{
+        ptr_node->ptr_next = ptr_nnode;
+    }
+}
+
+void fusionInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionInterval *ptr_nnode, struct DataFusion *ptr_fusion){
+    if (!ptr_node){ // First element
+        ptr_fusion->ptr_head = ptr_nnode;
     }
     else{
         ptr_node->ptr_next = ptr_nnode;
@@ -93,7 +102,7 @@ int getInterval(struct Sensor *ptr_sensor){
             ptr_nnode->start = start;
             ptr_nnode->end = end;
             ptr_nnode->ptr_next = NULL;
-            insertNodeAfter(ptr_last_node, ptr_nnode, ptr_sensor);
+            sensorInsertNodeAfter(ptr_last_node, ptr_nnode, ptr_sensor);
             ptr_last_node = ptr_nnode; // Save Adress of last element
             ptr_nnode = NULL; // Clear Pointer
             interval = 0;
@@ -110,13 +119,52 @@ int getInterval(struct Sensor *ptr_sensor){
     return 1;
 }
 
+int getFusionInterval(struct DataFusion *ptr_fusion){
+    char interval = 0;
+    float start = 0.0;
+    float end = 0.0;
+    struct DetectionInterval *ptr_last_node = NULL;
+    for (int i = 0; i < SAMPLES; i++){
+        if (ptr_fusion->object_detection[i] == 1 && interval == 0){
+            start = ptr_fusion->time[i];
+            interval = 1;
+        }
+        if (ptr_fusion->object_detection[i] == 0 && interval == 1){
+            end = ptr_fusion->time[i];
+            struct DetectionInterval *ptr_nnode = malloc(sizeof(ptr_nnode));
+            if(!ptr_nnode){
+                printf("Failed to create new Interval Element\n");
+                return -1;
+            }
+            ptr_nnode->start = start;
+            ptr_nnode->end = end;
+            ptr_nnode->ptr_next = NULL;
+            fusionInsertNodeAfter(ptr_last_node, ptr_nnode, ptr_fusion);
+            ptr_last_node = ptr_nnode; // Save Adress of last element
+            ptr_nnode = NULL; // Clear Pointer
+            interval = 0;
+        }
+    } 
+    struct DetectionInterval *ptr_node = ptr_fusion->ptr_head;
+    int i = 0;
+    while (ptr_node){
+        printf("Interval %d: Start: %f End: %f   ", i, ptr_node->start, ptr_node->end);
+        ptr_node = ptr_node->ptr_next;
+        i++;
+    }
+    printf("\n");
+    return 1;
+}
+
 int main(){
     struct Sensor sensor1 = {1,0.8};
     struct Sensor sensor2 = {1,0.7};
+    struct DataFusion fusion = {};
     //struct fusionInterval fusion = {0.0,0.0,NULL};
     sensor1.ptr_head = NULL;
     sensor2.ptr_head = NULL;
-    char fusion[SAMPLES] = {0};
+    //char fusion[SAMPLES] = {0};
+    struct DetectionInterval *ptr_head;
 
     readSensorData(path_file1, &sensor1);
     readSensorData(path_file2, &sensor2);
@@ -124,10 +172,12 @@ int main(){
     checkDetection(&sensor1);
     checkDetection(&sensor2);
 
-    dataFusion(&sensor1, &sensor2, fusion);
+    dataFusion(&sensor1, &sensor2, &fusion);
 
-    printf("Sensor1: ");
+    printf("%-18s", "Sensor1: ");
     getInterval(&sensor1);
-    printf("Sensor2: ");
+    printf("%-18s", "Sensor2: ");
     getInterval(&sensor2);
+    printf("%-18s", "Fusion Intervals: ");
+    getFusionInterval(&fusion);
 }
