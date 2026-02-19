@@ -93,7 +93,7 @@ int getInterval(struct Sensor *ptr_sensor){
             interval = 1;
         }
         if (ptr_sensor->object_detection[i] == 0 && interval == 1){
-            end = ptr_sensor->data[i].time;
+            end = ptr_sensor->data[i- 1].time;
             struct DetectionInterval *ptr_nnode = malloc(sizeof(ptr_nnode));
             if(!ptr_nnode){
                 printf("Failed to create new Interval Element\n");
@@ -130,7 +130,7 @@ int getFusionInterval(struct DataFusion *ptr_fusion){
             interval = 1;
         }
         if (ptr_fusion->object_detection[i] == 0 && interval == 1){
-            end = ptr_fusion->time[i];
+            end = ptr_fusion->time[i - 1];
             struct DetectionInterval *ptr_nnode = malloc(sizeof(ptr_nnode));
             if(!ptr_nnode){
                 printf("Failed to create new Interval Element\n");
@@ -160,10 +160,8 @@ int main(){
     struct Sensor sensor1 = {1,0.8};
     struct Sensor sensor2 = {1,0.7};
     struct DataFusion fusion = {};
-    //struct fusionInterval fusion = {0.0,0.0,NULL};
     sensor1.ptr_head = NULL;
     sensor2.ptr_head = NULL;
-    //char fusion[SAMPLES] = {0};
     struct DetectionInterval *ptr_head;
 
     readSensorData(path_file1, &sensor1);
