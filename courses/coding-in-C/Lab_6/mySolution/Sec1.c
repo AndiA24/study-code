@@ -92,8 +92,13 @@ int getInterval(struct Sensor *ptr_sensor){
             start = ptr_sensor->data[i].time;
             interval = 1;
         }
-        if (ptr_sensor->object_detection[i] == 0 && interval == 1){
-            end = ptr_sensor->data[i- 1].time;
+        if (ptr_sensor->object_detection[i] == 0 && interval == 1 || i == (SAMPLES - 1)){
+            if(i == SAMPLES - 1){
+                end = ptr_sensor->data[i].time;
+            }
+            else{
+                end = ptr_sensor->data[i - 1].time;
+            }
             struct DetectionInterval *ptr_nnode = malloc(sizeof(ptr_nnode));
             if(!ptr_nnode){
                 printf("Failed to create new Interval Element\n");
@@ -107,7 +112,7 @@ int getInterval(struct Sensor *ptr_sensor){
             ptr_nnode = NULL; // Clear Pointer
             interval = 0;
         }
-    } 
+    }
     struct DetectionInterval *ptr_node = ptr_sensor->ptr_head;
     int i = 0;
     while (ptr_node){
@@ -129,8 +134,13 @@ int getFusionInterval(struct DataFusion *ptr_fusion){
             start = ptr_fusion->time[i];
             interval = 1;
         }
-        if (ptr_fusion->object_detection[i] == 0 && interval == 1){
-            end = ptr_fusion->time[i - 1];
+        if (ptr_fusion->object_detection[i] == 0 && interval == 1 || i == (SAMPLES -1)){
+            if(i == (SAMPLES -1)){
+                end=ptr_fusion->time[i];
+            }
+            else{
+                end = ptr_fusion->time[i - 1];
+            }
             struct DetectionInterval *ptr_nnode = malloc(sizeof(ptr_nnode));
             if(!ptr_nnode){
                 printf("Failed to create new Interval Element\n");
