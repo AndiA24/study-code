@@ -27,6 +27,12 @@ struct DataFusion{
     struct DetectionInterval *ptr_head;
 };
 
+/**
+ * @brief Reads sensor data from a file into a Sensor struct.
+ * @param ptr_path Pointer to the file path string.
+ * @param ptr_sensor Pointer to the Sensor struct to store the data.
+ * @return 1 on success, -1 if the file could not be opened.
+ */
 int readSensorData(char *ptr_path, struct Sensor *ptr_sensor){
     FILE *ptr_f1 = fopen(ptr_path, "r");
     if(ptr_f1 == NULL){
@@ -40,6 +46,11 @@ int readSensorData(char *ptr_path, struct Sensor *ptr_sensor){
     return 1;
 }
 
+/**
+ * @brief Checks for each sample whether the probability exceeds the sensor threshold.
+ * @param ptr_sensor Pointer to the Sensor struct to evaluate.
+ * @return void
+ */
 void checkDetection(struct Sensor *ptr_sensor){
     for(int i = 0; i < SAMPLES; i++){
         if(ptr_sensor->data[i].probability >= ptr_sensor->threshold){
@@ -51,6 +62,13 @@ void checkDetection(struct Sensor *ptr_sensor){
     }
 }
 
+/**
+ * @brief Fuses the detection results of two sensors using a logical AND.
+ * @param ptr_sensor1 Pointer to the first Sensor struct.
+ * @param ptr_sensor2 Pointer to the second Sensor struct.
+ * @param ptr_fusion Pointer to the DataFusion struct to store the combined result.
+ * @return void
+ */
 void dataFusion(struct Sensor *ptr_sensor1, struct Sensor *ptr_sensor2, struct DataFusion *ptr_fusion){
     for (int i = 0; i < SAMPLES; i++){
         if (ptr_sensor1->object_detection[i] && ptr_sensor2->object_detection[i])
@@ -64,6 +82,13 @@ void dataFusion(struct Sensor *ptr_sensor1, struct Sensor *ptr_sensor2, struct D
     }
 }
 
+/**
+ * @brief Inserts a new DetectionInterval node into the sensor's linked list.
+ * @param ptr_node Pointer to the current last node (NULL if list is empty).
+ * @param ptr_nnode Pointer to the new node to insert.
+ * @param ptr_sensor Pointer to the Sensor struct owning the list.
+ * @return void
+ */
 void sensorInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionInterval *ptr_nnode, struct Sensor *ptr_sensor){
     if (!ptr_node){ // First element
         ptr_sensor->ptr_head = ptr_nnode;
@@ -73,6 +98,13 @@ void sensorInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionI
     }
 }
 
+/**
+ * @brief Inserts a new DetectionInterval node into the fusion's linked list.
+ * @param ptr_node Pointer to the current last node (NULL if list is empty).
+ * @param ptr_nnode Pointer to the new node to insert.
+ * @param ptr_fusion Pointer to the DataFusion struct owning the list.
+ * @return void
+ */
 void fusionInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionInterval *ptr_nnode, struct DataFusion *ptr_fusion){
     if (!ptr_node){ // First element
         ptr_fusion->ptr_head = ptr_nnode;
@@ -82,6 +114,11 @@ void fusionInsertNodeAfter(struct DetectionInterval *ptr_node, struct DetectionI
     }
 }
 
+/**
+ * @brief Determines detection intervals from a sensor's detection array and stores them as a linked list.
+ * @param ptr_sensor Pointer to the Sensor struct to analyze.
+ * @return 1 on success, -1 if memory allocation fails.
+ */
 int getInterval(struct Sensor *ptr_sensor){
     char interval = 0;
     float start = 0.0;
@@ -124,6 +161,11 @@ int getInterval(struct Sensor *ptr_sensor){
     return 1;
 }
 
+/**
+ * @brief Determines detection intervals from the fused detection array and stores them as a linked list.
+ * @param ptr_fusion Pointer to the DataFusion struct to analyze.
+ * @return 1 on success, -1 if memory allocation fails.
+ */
 int getFusionInterval(struct DataFusion *ptr_fusion){
     char interval = 0;
     float start = 0.0;
@@ -166,6 +208,10 @@ int getFusionInterval(struct DataFusion *ptr_fusion){
     return 1;
 }
 
+/**
+ * @brief Main entry point. Reads sensor data, performs detection, fuses results and prints intervals.
+ * @return 0 on success (implicit).
+ */
 int main(){
     struct Sensor sensor1 = {1,0.8};
     struct Sensor sensor2 = {1,0.7};
