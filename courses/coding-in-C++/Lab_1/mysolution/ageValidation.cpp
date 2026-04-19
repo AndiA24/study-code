@@ -5,6 +5,8 @@
 namespace validation{
     const std::uint8_t AGE_LIMIT_ADULT = 18;
     const std::uint8_t AGE_LIMIT_SENIOR = 65;
+    const std::uint8_t AGE_LIMIT_VALIDATION = 120;
+
 
     bool isAdult(std::uint8_t age){
         return age >= AGE_LIMIT_ADULT;
@@ -16,7 +18,6 @@ namespace validation{
 }
 
 int main(){
-    std::uint8_t AGE_LIMIT_VALIDATION = 120;
     int age;
     bool invalid_input = false;
 
@@ -25,7 +26,7 @@ int main(){
         std::cout << "Please enter youre Age: ";
 
         std::cin >> age;
-        if(age >= AGE_LIMIT_VALIDATION || age < 0){
+        if(age >= validation::AGE_LIMIT_VALIDATION || age < 0){
             std::cout << "Invalid Input. Age must be between 0 and 120." << std::endl;
             invalid_input = true;
         }
