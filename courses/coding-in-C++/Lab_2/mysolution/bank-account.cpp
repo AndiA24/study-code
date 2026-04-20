@@ -7,17 +7,17 @@ class BankAccount{
         double balance;
 
     public:
-        void setOwner(std::string ownerName){
-            owner = ownerName;
+        double getBalance();
+
+        void getAccountInfo();
+
+        void setOwner(std::string owner){
+            this->owner = owner;
         }
 
         std::string getOwner(){
             return owner;
         }
-
-        double getBalance();
-
-        void getAccountInfo();
 
         void deposit(double depositAmount){
             if(depositAmount <= 0){
@@ -39,6 +39,26 @@ class BankAccount{
         }
 };
 
+double BankAccount::getBalance(){
+    return balance;
+}
+
 void BankAccount::getAccountInfo(){
-    
+    std::cout << "Account Owner is: " << getOwner() << std::endl;
+    std::cout << "The current balance is " << getBalance() << std::endl;
+}
+
+int main(){
+
+    BankAccount *Acc1 = new BankAccount;
+
+    Acc1->getAccountInfo();
+
+    Acc1->setOwner("Andi");
+
+    Acc1->getAccountInfo();
+
+    Acc1->deposit(200);
+
+    return 0;
 }
