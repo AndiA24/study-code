@@ -67,6 +67,16 @@ public:
     DrinkBuilder setWithMilk(bool with_milk);
 
     /**
+     * @brief Checks wether the drink-config is valid
+     * 
+     * This function checks wether the current drink-config 
+     * is valid or not.
+     * 
+     * @return Returns true if valid and false if not
+     */
+    bool isValid();
+
+    /**
      * @brief Prints the config of the drink
      * 
      * This function prints the config / info about 
@@ -82,11 +92,17 @@ DrinkBuilder DrinkBuilder::setName(const std::string &name){
 }
 
 DrinkBuilder DrinkBuilder::setSugar(int sugar){
+    if(sugar < 0){
+        sugar = 0;
+    }
     this->sugar = sugar;
     return *this;
 }
 
 DrinkBuilder DrinkBuilder::setTemperature(int temperature){
+    if(temperature < 0){
+        temperature = 0;
+    }
     this->temperature = temperature;
     return *this;
 }
@@ -94,6 +110,19 @@ DrinkBuilder DrinkBuilder::setTemperature(int temperature){
 DrinkBuilder DrinkBuilder::setWithMilk(bool with_milk){
     this->with_milk = with_milk;
     return *this;
+}
+
+bool DrinkBuilder::isValid(){
+    if(name.empty()){
+        return false;
+    }
+    if(sugar < 0){
+        return false;
+    }
+    if(temperature < 0){
+        return false;
+    }
+    return true;
 }
 
 void DrinkBuilder::print() const{ 
