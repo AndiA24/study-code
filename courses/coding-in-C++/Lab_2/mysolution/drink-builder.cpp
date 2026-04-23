@@ -32,7 +32,7 @@ public:
      * @param[in] name  new name for the drink
      * @return Returns reference to current object
      */
-    DrinkBuilder setName(const std::string &name);
+    DrinkBuilder& setName(const std::string &name);
 
     /**
      * @brief Changes the amount of sugar
@@ -42,7 +42,7 @@ public:
      * @param[in] sugar Amount of sugar in the drink
      * @return Returns reference to current object
      */
-    DrinkBuilder setSugar(int sugar);
+    DrinkBuilder& setSugar(int sugar);
 
     /**
      * @brief Changes the temperature of the drink
@@ -53,7 +53,7 @@ public:
      * @param[in] temperature   New temperature for the drink
      * @return returns reference to current object
      */
-    DrinkBuilder setTemperature(int temperature);
+    DrinkBuilder& setTemperature(int temperature);
 
     /**
      * @brief Sets if the drink contains milk
@@ -64,7 +64,7 @@ public:
      * @param[in] with_milk true for with milk, false for without
      * @return returns reference to current object
      */
-    DrinkBuilder setWithMilk(bool with_milk);
+    DrinkBuilder& setWithMilk(bool with_milk);
 
     /**
      * @brief Checks wether the drink-config is valid
@@ -86,12 +86,12 @@ public:
 
 };
 
-DrinkBuilder DrinkBuilder::setName(const std::string &name){
+DrinkBuilder& DrinkBuilder::setName(const std::string &name){
     this->name = name;
     return *this;
 }
 
-DrinkBuilder DrinkBuilder::setSugar(int sugar){
+DrinkBuilder& DrinkBuilder::setSugar(int sugar){
     if(sugar < 0){
         sugar = 0;
     }
@@ -99,7 +99,7 @@ DrinkBuilder DrinkBuilder::setSugar(int sugar){
     return *this;
 }
 
-DrinkBuilder DrinkBuilder::setTemperature(int temperature){
+DrinkBuilder& DrinkBuilder::setTemperature(int temperature){
     if(temperature < 0){
         temperature = 0;
     }
@@ -107,7 +107,7 @@ DrinkBuilder DrinkBuilder::setTemperature(int temperature){
     return *this;
 }
 
-DrinkBuilder DrinkBuilder::setWithMilk(bool with_milk){
+DrinkBuilder& DrinkBuilder::setWithMilk(bool with_milk){
     this->with_milk = with_milk;
     return *this;
 }
@@ -142,10 +142,9 @@ void DrinkBuilder::print() const{
 
 int main(){
     DrinkBuilder drink;
-    drink.setName("Vodaka")
+    drink.setName("Vodka")
          .setSugar(2)
          .setTemperature(5)
-         .setWithMilk(false)
-         .print();
-
+         .setWithMilk(false);
+    drink.print();
 }
