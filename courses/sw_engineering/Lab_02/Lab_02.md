@@ -148,7 +148,7 @@ Answer the following questions:
 * A teammate suggests that the product page should directly query the database because it would be faster. Do you agree? Explain your decision using layered architecture.
 
 
-## 🟢 Section IV: UML Component Diagrams
+## 🟡 Section IV: UML Component Diagrams
 
 In this exercise, you will practice creating a UML component diagram from a short architectural description.
 The goal is to identify software components, their interfaces, and the dependencies between them.
@@ -172,32 +172,25 @@ The Event Management Service stores and reads event data from an Event Database 
 Event registrations are handled by a separate Registration Service.
 When a student registers for or cancels an event, the Registration Service checks the student's login status through a User Account Service.
 It then stores registration data in the Event Database.
-The User Account Service is responsible for user information and stores its data in a User Database.
 
 Before an event becomes visible to students, an administrator must approve it through an Approval Service.
 After a successful registration or cancellation, a Notification Service sends a message to the student through an External Email Gateway.
 
-#### 1. Identify Components and Responsibilities
+The backend services use a shared configuration artifact named `campus-events-config.yaml`.
+This configuration file contains the database connection name, the endpoint of the User Account Service, the endpoint of the External Email Gateway, and the endpoint of the External Calendar Service.
+The Event Management Service, Registration Service, and Notification Service read this configuration file when they start.
 
-Identify the software components described in the scenario that should appear in the component diagram.
+#### 1. Identify Components
 
-For each component, briefly describe its main responsibility.
+Identify the software components described in the scenario that should appear in the component diagram and add them to your diagram.
 
 #### 2. Define Interfaces
 
-Add provided and required interfaces for the most important interactions.
+Add provided and required interfaces for the most important interactions to your diagram.
 
 #### 3. Draw Dependencies
 
-Create the UML component diagram and show the dependencies between components.
+Show the dependencies between components in your diagram.
 
-Label the components, interfaces, databases, and dependencies clearly.
+Use cylinders for databases even if they are not standard UML components.
 
-#### 4. Reflect on the Design
-
-Answer the following questions:
-
-* Which components are directly used by the Web Frontend or Mobile App?
-* Which components depend on services outside the platform?
-* Which components should not directly access the User Database? Explain why.
-* What is one advantage of separating the Registration Service from the Event Management Service?
