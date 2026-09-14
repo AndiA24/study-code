@@ -146,3 +146,58 @@ Answer the following questions:
 * What is one benefit of your design?
 * What is one drawback of your design?
 * A teammate suggests that the product page should directly query the database because it would be faster. Do you agree? Explain your decision using layered architecture.
+
+
+## 🟢 Section IV: UML Component Diagrams
+
+In this exercise, you will practice creating a UML component diagram from a short architectural description.
+The goal is to identify software components, their interfaces, and the dependencies between them.
+
+### Task Description
+
+Model the following system as a UML component diagram in Draw.io.
+
+#### System: Campus Event Management Platform
+
+A university wants to build a campus event management platform.
+Students can browse upcoming events, register for events, receive notifications, and cancel registrations.
+Event organizers can create events, update event details, view attendee lists, and check students in at the event.
+Administrators can approve new events before they are published.
+
+Students access the platform through a Web Frontend or a Mobile App.
+Both clients communicate with an Event Management Service to browse event information.
+Event organizers also use the Event Management Service to create events, update event details, view attendee lists, and check students in at the event.
+The Event Management Service stores and reads event data from an Event Database and can request calendar entries from an External Calendar Service.
+
+Event registrations are handled by a separate Registration Service.
+When a student registers for or cancels an event, the Registration Service checks the student's login status through a User Account Service.
+It then stores registration data in the Event Database.
+The User Account Service is responsible for user information and stores its data in a User Database.
+
+Before an event becomes visible to students, an administrator must approve it through an Approval Service.
+After a successful registration or cancellation, a Notification Service sends a message to the student through an External Email Gateway.
+
+#### 1. Identify Components and Responsibilities
+
+Identify the software components described in the scenario that should appear in the component diagram.
+
+For each component, briefly describe its main responsibility.
+
+#### 2. Define Interfaces
+
+Add provided and required interfaces for the most important interactions.
+
+#### 3. Draw Dependencies
+
+Create the UML component diagram and show the dependencies between components.
+
+Label the components, interfaces, databases, and dependencies clearly.
+
+#### 4. Reflect on the Design
+
+Answer the following questions:
+
+* Which components are directly used by the Web Frontend or Mobile App?
+* Which components depend on services outside the platform?
+* Which components should not directly access the User Database? Explain why.
+* What is one advantage of separating the Registration Service from the Event Management Service?
