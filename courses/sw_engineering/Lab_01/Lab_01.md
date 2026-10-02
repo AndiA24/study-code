@@ -362,35 +362,57 @@ No need to prepare slides for this presentation. A short oral explanation is suf
 ## 🟢 Section V: Getting Started with Enterprise Architect
 
 In this short exercise, you will get familiar with Enterprise Architect as a tool for documenting requirements.
-The goal is to explore the interface, create one or two simple requirements, and notice which features could support requirements engineering work.
+The goal is to create one or two simple requirements and generate a first requirements document.
 
 ### Task Description
 
 Work individually or at max in pairs.
-This task should take about 10 to 15 minutes.
+This task should take about 20 to 30 minutes.
 If you need orientation, use the Enterprise Architect User Guide pages on [Getting Started](https://sparxsystems.org/enterprise_architect_user_guide/17.1/getting_started/ea_getting_started.html) and [Creating and Viewing Requirements](https://sparxsystems.com/enterprise_architect_user_guide/17.1/modeling_domains/creating_and_viewing_requirements.html).
 
-#### 1. Explore the Tool
+#### 1. Create Requirements
 
-Open Enterprise Architect and take a few minutes to look around.
+Create one or two first requirements for the alarm-clock application from Section IV.
 
-Focus especially on:
+Use the following workflow:
 
-* Where projects, packages, and elements are shown
-* How new elements can be created
-* Where requirement details can be entered
-* Which views or diagrams seem useful for requirements engineering
+* Open Enterprise Architect
+* Select **Create new**
+* Click **Model**, then use the **Select:** icon and choose **New Package**
+* Select **Only Package** and set the name to **Requirements**
+* Right-click the **Requirements** package and select **Specification Manager**; alternatively, use **Ctrl+0**
+* Use the **Add New** button, then choose **Other -> Requirements > Requirement Type**
+  * After selecting the requirement type once, it is sufficient to press the **Add New** button directly instead of using the arrow on the right side of the button again
+* Right-click the table columns to open the **Field Chooser**
+  * Use the **Field Chooser** to add or remove columns
+* Enter the main requirement text in **Notes**; the **Notes** window is located at the bottom right of the screen
 
-#### 2. Create Requirements
+For each requirement, fill in the most relevant fields:
 
-Create one or two requirements for the alarm-clock application from Section IV.
+* **Item** -> short title
+* **Notes** or description -> actual requirement text
+* **Status** -> for example **Proposed**, **Approved**, or **Implemented**
+* **Priority**
+* **Alias** -> optional own requirement ID, for example **SYS-ICE-042**
+* **Stereotype**
+* **Author**
 
-For each requirement:
+Structure the document through packages. Create additional packages if they help you organize functional and non-functional requirements.
 
-* Give it a clear name
-* Add a short description
-* Decide whether it is functional or non-functional
-* Save it in a suitable package or model structure
+#### 2. Generate Documentation
+
+Create a first requirements document from your Enterprise Architect model.
+
+Use the following workflow:
+
+* Switch to the **Publish** area
+* Select the package that should be documented
+* Open **Report Builder** and choose **Generate Documentation**
+* Define the filename and file type
+* Select a template of your choice
+* Click **Generate** and optionally **View**
+
+Note: In professional use, a suitable custom template, individual columns, and automatic values such as IDs usually have to be created first.
 
 
 ## 🟢 Section VI: Getting Started with GitLab Issues
