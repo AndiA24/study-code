@@ -292,3 +292,467 @@ Answer in `security_notes.md`:
 * What are the limits of automated security scanning?
 * Why should security scanner findings still be reviewed by a developer?
 
+## Section IV: Unit Testing with GoogleTest, CMake, and a Pipeline
+
+In this section, you will add automated unit tests to a small C++ project and run them in a GitLab pipeline.
+The CMake basics were already introduced in Lab 05, so this section focuses on the new parts: integrating GoogleTest, registering tests with CTest, and making the pipeline fail when a test fails.
+
+The folder `gtest_pipeline_project` contains a small C++ program that analyzes system load samples.
+Your task is to write meaningful tests for this code and verify that the same tests run locally and in GitLab CI.
+
+### Task Description
+
+Open the folder `gtest_pipeline_project`.
+Inspect the files in `include` and `src`.
+
+The production code contains:
+
+* `StatusAnalyzer::averageLoad`, which calculates the average of integer load samples
+* `StatusAnalyzer::isOverloaded`, which checks whether the average load is at least `80.0`
+* `StatusAnalyzer::statusMessage`, which returns either `OK` or `OVERLOADED`
+
+Create a file called `testing_notes.md` and use it to document your observations.
+
+### 1. Verify the Required Tools
+
+Use the tools from Lab 05 and verify that they are available.
+GoogleTest must also be installed on the system so CMake can find it.
+Typical package names are `mingw-w64-ucrt-x86_64-gtest` on MSYS2 UCRT64, `libgtest-dev` on Ubuntu, and `googletest` on macOS with Homebrew.
+
+```bash
+g++ --version
+cmake --version
+git --version
+```
+
+Write the detected versions into `testing_notes.md`.
+
+Answer:
+
+* Which compiler version do you use?
+* Which CMake version do you use?
+* Why should a pipeline use a clearly defined build environment?
+
+### 2. Extend the CMake Project with GoogleTest
+
+Create a `CMakeLists.txt` file for `gtest_pipeline_project`.
+Use the target-based CMake style from Lab 05:
+
+* define a C++17 project
+* create a library target for `src/status_analyzer.cpp`
+* add the `include` folder to that library target
+* create an application target for `src/main.cpp`
+* link the application target against the library target
+
+Then add GoogleTest support.
+Use an installed GoogleTest package and let CMake find it:
+
+```cmake
+find_package(GTest REQUIRED)
+```
+
+`find_package` asks CMake to locate an installed library and make its CMake targets available.
+For GoogleTest, the important target in this lab is `GTest::gtest_main`.
+
+Create a test target in the same `CMakeLists.txt`.
+It should:
+
+* build `tests/status_analyzer_tests.cpp`
+* link against your production library
+* link against `GTest::gtest_main`
+* be registered with CTest by using `gtest_discover_tests`
+
+You will need these CMake lines around the test target:
+
+```cmake
+include(CTest)
+enable_testing()
+
+include(GoogleTest)
+gtest_discover_tests(<your-test-target>)
+```
+
+`gtest_discover_tests` asks the compiled GoogleTest executable which tests it contains and then registers those tests with CTest.
+This is the bridge between GoogleTest and the `ctest` command.
+
+Answer in `testing_notes.md`:
+
+* Which CMake target contains the reusable production code?
+* Which CMake target contains the tests?
+* Why should the tests link against the production library instead of compiling a second copy of the same implementation manually?
+
+### 3. Write Unit Tests
+
+Create a `tests` folder and a file called `tests/status_analyzer_tests.cpp`.
+
+Use this minimal structure as a starting point:
+
+```cpp
+#include "status_analyzer.hpp"
+
+#include <gtest/gtest.h>
+
+TEST(StatusAnalyzerTest, DescriptiveTestName)
+{
+    // Arrange: create the object and input data
+    // Act: call the function under test
+    // Assert: check the result with a GoogleTest expectation
+}
+```
+
+Write your own test cases.
+Your test suite should verify at least:
+
+* the average of several load samples
+* the overload boundary at exactly `80.0`
+* a non-overloaded value below the boundary
+* the status text for a normal load
+* the status text for an overloaded load
+* the behavior for an empty sample list
+
+Useful GoogleTest expectations:
+
+* `EXPECT_DOUBLE_EQ(actual, expected)` for floating-point results
+* `EXPECT_TRUE(expression)` for conditions that must be true
+* `EXPECT_FALSE(expression)` for conditions that must be false
+* `EXPECT_EQ(actual, expected)` for exact equality
+* `EXPECT_THROW(statement, exception_type)` when an exception is expected
+
+Answer in `testing_notes.md`:
+
+* Which input values did you choose for each test?
+* Which edge case did you test?
+* Why is the boundary value `80.0` important?
+
+### 4. Build and Run the Tests Locally
+
+Configure the project:
+
+```bash
+cmake -S . -B build -G "Unix Makefiles"
+```
+
+The `-G "Unix Makefiles"` parameter tells CMake to generate Makefiles.
+This keeps the build step close to the Make-based workflow from Lab 05.
+
+Build the project:
+
+```bash
+cmake --build build
+```
+
+Run the tests through CTest:
+
+```bash
+ctest --test-dir build --output-on-failure
+```
+
+The `--output-on-failure` parameter is useful in pipelines because it prints the failing test output directly into the job log.
+
+Run the application as an additional manual check:
+
+```bash
+./build/status_analyzer_app
+```
+
+On Windows PowerShell, the executable may be called:
+
+```powershell
+.\build\status_analyzer_app.exe
+```
+
+Answer in `testing_notes.md`:
+
+* How many tests were discovered by CTest?
+* Which command builds the test executable?
+* Which command runs the tests?
+* Why is it useful to run tests through CTest instead of only starting the test executable manually?
+
+### 5. Prove That the Tests Can Fail
+
+Temporarily introduce one small bug into `src/status_analyzer.cpp`.
+For example, change the overload boundary so that exactly `80.0` is handled incorrectly.
+
+Rebuild and rerun the tests:
+
+```bash
+cmake --build build
+ctest --test-dir build --output-on-failure
+```
+
+At least one test should fail.
+After observing the failure, undo the temporary bug and run the tests again.
+The tests should pass again.
+
+Answer in `testing_notes.md`:
+
+* Which test failed?
+* What did the failure message tell you?
+* Why is a deliberately failing test useful before trusting a new pipeline?
+
+### 6. Add GoogleTest to the GitLab Pipeline
+
+Create a `.gitlab-ci.yml` file in the root of `gtest_pipeline_project`.
+Add a job called `gtest-cmake` that configures, builds, and tests the project.
+
+The job should:
+
+* run in the `test` stage
+* use a Linux container with a recent GCC toolchain, for example `gcc:14`
+* install CMake, Make, and GoogleTest before the build commands are executed
+* run the same three commands that you used locally:
+
+```yaml
+script:
+  - cmake -S . -B build -G "Unix Makefiles"
+  - cmake --build build
+  - ctest --test-dir build --output-on-failure
+```
+
+The `-G "Unix Makefiles"` parameter selects Makefiles as the generated build system.
+The `--output-on-failure` parameter should stay in the pipeline because otherwise failed tests may be hard to diagnose from the job log.
+In a Debian-based CI image, the GoogleTest package is called `libgtest-dev`.
+
+Store `build/Testing/` as a pipeline artifact so the CTest output can be inspected after the job finishes.
+
+Commit and push the CMake file, pipeline file, test file, and notes.
+Open GitLab and inspect the pipeline result.
+
+Answer in `testing_notes.md`:
+
+* Which job ran the tests?
+* Which commands are visible in the job log?
+* Did the pipeline pass or fail?
+* Where can you find the CTest output artifacts?
+
+### 7. Verify That the Pipeline Protects the Project
+
+Repeat the temporary bug from step 5 and push it.
+The `gtest-cmake` job should fail.
+Open the job log and find the failing test.
+
+After verifying the failure, fix the bug again and push the fix.
+The pipeline should pass again.
+
+Answer in `testing_notes.md`:
+
+* Which test caught the bug?
+* Why did the pipeline fail?
+* Why is it useful that the same test command runs locally and in GitLab?
+* How could this job be combined with the formatting, linting, and security jobs from the previous sections?
+
+## Section V: Measuring Test Coverage with gcov and gcovr
+
+In this section, you will measure which parts of a small C++ project are executed by its tests.
+Coverage does not tell you whether the tests are good, but it can show which code has not been executed at all.
+
+First you will use `gcov` directly in the terminal.
+After that, you will use `gcovr` to create a more readable summary.
+
+### Task Description
+
+Open the folder `gcov_coverage_project`.
+Inspect the files in `include`, `src`, and `tests`.
+
+The project contains a small temperature statistics module and a simple test program that uses `assert`.
+The test program already checks some behavior, but it does not cover every branch.
+
+Create a file called `coverage_notes.md` and use it to document your observations.
+
+### 1. Verify the Required Tools
+
+Check that GCC, gcov, and gcovr are available:
+
+```bash
+g++ --version
+gcov --version
+gcovr --version
+```
+
+If `gcovr` is missing, install it with your package manager or with Python:
+
+```bash
+python -m pip install gcovr
+```
+
+Notes:
+
+* `g++` compiles the C++ source files.
+* `gcov` reads coverage data produced by GCC.
+* `gcovr` collects gcov data and creates compact reports.
+* `python -m pip install gcovr` installs `gcovr` through Python's package installer.
+
+Answer in `coverage_notes.md`:
+
+* Which versions of `g++`, `gcov`, and `gcovr` do you use?
+* Why should the compiler and coverage tool belong to the same toolchain?
+
+### 2. Compile the Test Program with Coverage Flags
+
+Compile the test program from inside `gcov_coverage_project`:
+
+```bash
+g++ --coverage -O0 -g -Iinclude src/temperature_stats.cpp tests/test_temperature_stats.cpp -o coverage_test
+```
+
+Important parameters:
+
+* `--coverage` enables GCC's coverage instrumentation.
+* `-O0` disables optimization, which makes coverage results easier to understand.
+* `-g` adds debug information.
+* `-Iinclude` tells the compiler where the project headers are located.
+* `-o coverage_test` names the generated executable.
+
+After compiling, inspect the generated files.
+You should see files ending in `.gcno`.
+These files contain coverage structure information that is created at compile time.
+
+Answer in `coverage_notes.md`:
+
+* Which `.gcno` files were created?
+* Why is coverage instrumentation needed before running the program?
+
+### 3. Run the Test Program
+
+Run the executable:
+
+```bash
+./coverage_test
+```
+
+On Windows PowerShell, the executable may be called:
+
+```powershell
+.\coverage_test.exe
+```
+
+If the program exits without output, the assertions passed.
+Inspect the generated files again.
+You should now also see files ending in `.gcda`.
+These files contain the execution counts collected while the program ran.
+
+Answer in `coverage_notes.md`:
+
+* Which `.gcda` files were created?
+* Why are `.gcda` files created only after the executable has run?
+
+### 4. Inspect Coverage with gcov
+
+Run `gcov` for the production source file.
+Depending on your compiler and platform, the generated coverage data file can have a slightly different name.
+Look for the `.gcno` file that belongs to `temperature_stats.cpp` and pass it to `gcov`.
+
+Example:
+
+```bash
+gcov coverage_test-temperature_stats.gcno
+```
+
+If your generated file has a different name, use that file instead.
+
+`gcov` creates a readable file such as `temperature_stats.cpp.gcov`.
+It may also create `.gcov` files for standard library headers.
+For this task, focus on the report for `src/temperature_stats.cpp`.
+Open it and inspect the left column:
+
+* a number means the line was executed that many times
+* `#####` means the line was not executed
+* `-` means the line is not executable code
+
+Answer in `coverage_notes.md`:
+
+* Which functions were covered by the existing test program?
+* Which lines or branches were not covered?
+* Why does uncovered code not automatically mean that the code is wrong?
+
+### 5. Improve the Test Program
+
+Extend `tests/test_temperature_stats.cpp` with additional assertions.
+Try to cover behavior that was missing in the first report.
+
+Possible cases to consider:
+
+* a high temperature classification
+* a critical temperature above `80`
+* a critical temperature below `-20`
+* a list without critical temperatures
+* an empty input vector for functions that reject empty input
+
+Rebuild, rerun, and regenerate the gcov report:
+
+```bash
+g++ --coverage -O0 -g -Iinclude src/temperature_stats.cpp tests/test_temperature_stats.cpp -o coverage_test
+./coverage_test
+gcov coverage_test-temperature_stats.gcno
+```
+
+If your `.gcno` file has a different name, use your local file name again.
+
+Answer in `coverage_notes.md`:
+
+* Which new assertions did you add?
+* Which coverage gaps disappeared?
+* Which code is still uncovered?
+* Can 100 percent line coverage still miss bugs? Explain briefly.
+
+### 6. Create a Summary with gcovr
+
+Using `gcov` directly is useful for understanding the raw coverage files, but larger projects need a compact summary.
+Use `gcovr` from inside `gcov_coverage_project`:
+
+```bash
+gcovr --root . --print-summary
+```
+
+Important parameters:
+
+* `--root .` tells `gcovr` that the current folder is the project root.
+* `--print-summary` prints a short coverage summary in the terminal.
+
+Create a detailed text report:
+
+```bash
+gcovr --root . --txt coverage_report.txt
+```
+
+Create an HTML report:
+
+```bash
+gcovr --root . --html --html-details coverage_report.html
+```
+
+Open `coverage_report.txt` and `coverage_report.html`.
+
+Answer in `coverage_notes.md`:
+
+* What line coverage percentage does `gcovr` report?
+* Which report is easier to inspect: the gcov file, the text report, or the HTML report?
+* Why might a pipeline prefer a compact text or XML coverage report?
+
+### 7. Clean and Repeat
+
+Remove the generated coverage and executable files, then rebuild from a clean state.
+
+Typical generated files are:
+
+* `coverage_test` or `coverage_test.exe`
+* `*.gcno`
+* `*.gcda`
+* `*.gcov`
+* `coverage_report.txt`
+* `coverage_report.html`
+* `coverage_report.*.html`
+
+Run the complete workflow again:
+
+```bash
+g++ --coverage -O0 -g -Iinclude src/temperature_stats.cpp tests/test_temperature_stats.cpp -o coverage_test
+./coverage_test
+gcovr --root . --print-summary
+```
+
+Answer in `coverage_notes.md`:
+
+* Why is it useful to clean generated coverage files before a new measurement?
+* Which steps would you automate later in a pipeline?
+
