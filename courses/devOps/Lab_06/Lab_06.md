@@ -187,3 +187,108 @@ Commit and push the pipeline update.
 Create a new file with a small formatting or linting problem and push it to the remote repository.
 The pipeline should fail and show the reported problems.
 
+## 🟡 Section III: GitLab Security Scanning
+
+In this section, you will extend the pipeline with GitLab-native security scanning.
+GitLab provides predefined CI/CD templates for common security checks, so you do not have to install and maintain separate scanner scripts yourself.
+
+You will enable:
+
+* Secret Detection
+* Dependency Scanning
+* Static Application Security Testing (SAST)
+
+### Task Description
+
+Use the GitLab repository from the previous sections.
+Your task is to update the existing `.gitlab-ci.yml` file so that GitLab runs security scans automatically in the pipeline.
+
+### 1. Read About GitLab Security Scanners
+
+Open the GitLab documentation and read the short introduction pages for:
+
+* Secret Detection:
+  [https://docs.gitlab.com/user/application_security/secret_detection/pipeline/](https://docs.gitlab.com/user/application_security/secret_detection/pipeline/)
+* Dependency Scanning:
+  [https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/](https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/)
+* SAST:
+  [https://docs.gitlab.com/user/application_security/sast/](https://docs.gitlab.com/user/application_security/sast/)
+
+Answer in `security_notes.md`:
+
+* What kind of problem does each scanner try to find?
+
+### 2. Prepare a Small Dependency Example
+
+Dependency scanning needs dependency information.
+Add a small dependency manifest to your repository, for example a Python requirements file:
+
+```text
+flask==2.0.0
+requests==2.25.0
+```
+
+Store it as `requirements.txt` in the repository root.
+
+Add a small source file called `app.py` so that SAST has source code to inspect:
+
+```python
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route("/search")
+def search():
+    query = request.args.get("q", "")
+    return "Search query: " + query
+```
+
+Do not add real credentials to the repository.
+If you want to test secret detection, use only an obviously fake training value and remove it again after the experiment.
+
+### 3. Include GitLab Native Security Templates
+
+Update `.gitlab-ci.yml`.
+Keep the formatting and linting jobs from the previous sections and add the GitLab security templates.
+
+GitLab security scanning jobs use the `test` stage by default, so the pipeline must contain a `test` stage.
+
+### 4. Run and Inspect the Pipeline
+
+Commit and push the updated `.gitlab-ci.yml`, `requirements.txt`, `app.py`, and `security_notes.md`.
+
+Open GitLab and inspect:
+
+* `Build` > `Pipelines`
+* the jobs created by the included security templates
+* the job logs of the security scanners
+* the security findings, if your GitLab project shows a security or vulnerability report
+
+The dependency scanning job can also create a CycloneDX Software Bill of Materials (SBOM).
+Open the artifacts of the dependency scanning job and look for a file named similar to:
+
+```text
+gl-sbom-<package-type>-<package-manager>.cdx.json
+```
+
+For the Python dependency example, the exact name depends on the analyzer output.
+If no SBOM is created, check whether the repository contains a supported dependency file such as `requirements.txt`.
+
+Answer in `security_notes.md`:
+
+* Which new jobs were added by the templates?
+* Which stage did the security jobs run in?
+* Did the pipeline pass or fail?
+* Where can you see the scanner results in GitLab?
+* Was an SBOM artifact created? If yes, what is the file name?
+* Which dependencies are listed in the SBOM?
+
+### 5. Compare Manual Jobs and Native Templates
+
+Answer in `security_notes.md`:
+
+* How is the GitLab template approach different from writing your own shell commands?
+* Why is it useful that GitLab maintains these scanner templates?
+* What are the limits of automated security scanning?
+* Why should security scanner findings still be reviewed by a developer?
+
