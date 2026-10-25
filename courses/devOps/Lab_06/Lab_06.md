@@ -20,7 +20,6 @@ First we need to install the necessary tools for this lab. This includes a code 
 
 ### Task Description
 
-Select the operating system you are using and follow the instructions to install it.
 Assumption: You have already installed MSYS2 and the UCRT64 environment on your system. If not, please refer to section III of [Lab_01](https://gitlab.com/braunagel.christian/study-code/-/blob/main/courses/coding-in-C/Lab_1/Lab_1.md?ref_type=heads) for installation instructions.
 
 #### Windows
@@ -77,14 +76,16 @@ Here is what each part means:
 
 Open the ```.clang-format``` file and adapt some basic settings. For example:
 ```yaml
-BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 ColumnLimit: 100
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Linux
 ```
-* Create a small C or C++ source file with intentionally inconsistent formatting, for example `main.cpp` which consists of only one line of code.
+* Create a small C or C++ source file with intentionally inconsistent formatting, for example `main.cpp` which consists of a main function with only one line of code.
+
+* You might need to edit the file in a simple text editor to make it look messy without getting it automatically formatted by the editor when saving.
+
 * Format this single file in place by running:
 ```bash
 clang-format -i main.cpp
@@ -148,12 +149,12 @@ Run `clang-tidy` from inside the `linting_sensor_project` folder.
 
 #### Windows PowerShell
 ```powershell
-Get-ChildItem -Recurse -Include *.cpp,*.hpp | ForEach-Object { clang-tidy --quiet --config-file=.clang-tidy $_.FullName -- -std=c++17 -Wall -Iinclude }
+Get-ChildItem -Recurse -Include *.cpp,*.hpp | ForEach-Object { clang-tidy --config-file=.clang-tidy $_.FullName -- -std=c++17 -Wall -Iinclude }
 ```
 
 #### Ubuntu/macOS
 ```bash
-clang-tidy --quiet --config-file=.clang-tidy src/*.cpp include/*.hpp -- -std=c++17 -Wall -Iinclude
+clang-tidy --config-file=.clang-tidy src/*.cpp include/*.hpp -- -std=c++17 -Wall -Iinclude
 ```
 
 Write down the reported warnings in a file called `linting_notes.md`.
