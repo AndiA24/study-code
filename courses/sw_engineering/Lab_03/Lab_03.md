@@ -9,7 +9,111 @@ This lab is designed to help you understand the implementation and verification 
 🔴 __Complex__: A more demanding or longer software engineering activity that requires you to combine concepts, make decisions as a team, and work through a broader project context. Such tasks might take up to a few hours to complete.
 
 
-## 🟡 Section I: Your First GitLab Pipeline
+## 🟡 Section I: Case Study - Software License Review
+
+In this exercise, you will review licensing decisions made during software implementation and preparation for release.
+Some decisions contain mistakes; others are acceptable under the stated conditions. Your task is to distinguish them and justify your assessment.
+
+### Task Description
+
+#### Company: GreenByte Solutions
+
+GreenByte Solutions develops C++ applications and internal tools.
+During a review, the team collects the following eight scenarios from different projects.
+Treat each scenario independently. All component names are fictional.
+Assume that the stated licenses apply to the relevant versions and that no additional permissions, commercial agreements, or license exceptions exist unless explicitly mentioned.
+
+#### Scenario A: A Useful Repository
+
+Mara finds a public GitLab repository containing a substantial C++ parser that would save several days of work.
+The repository has no license file, license headers, or other statement granting reuse rights.
+She copies the parser into a product that will be delivered to customers and records the repository URL in an internal document.
+Her colleague approves the change because anyone can download the repository without paying.
+
+#### Scenario B: The Commercial Desktop Application
+
+Jonas integrates an unmodified MIT-licensed library into a desktop application that GreenByte sells to customers.
+The application remains proprietary, and customers receive no application source code.
+The distributed package contains the library's complete MIT license text and copyright notice in an accessible third-party licenses file.
+The team confirms that these notices accompany every distributed copy.
+
+#### Scenario C: Cleaning Up the Headers
+
+Lea copies several substantial functions from an MIT-licensed project into GreenByte's application.
+Before release, she removes the original copyright and license notices from the copied files to make the source code look consistent.
+The customer package contains only GreenByte's proprietary license; no copy of the MIT notice is supplied elsewhere.
+Lea argues that the original license is unnecessary because the functions have been renamed and slightly modified.
+
+#### Scenario D: The Downloadable Utility
+
+Amir modifies an existing utility licensed under GPL-3.0-only and distributes the modified executable to customers through a download portal.
+He includes the GPL license text and retains the original notices.
+However, GreenByte provides neither the corresponding source code nor any GPL-compliant way to obtain it, and refuses source requests because the modifications are considered confidential.
+The team believes the license text alone is sufficient because the utility is distributed free of charge.
+
+#### Scenario E: An Internal Analysis Tool
+
+Sofia modifies a GPL-3.0-only analysis tool for use by employees within GreenByte's single legal entity.
+The tool and its modifications remain inside that organization: no copies are supplied to customers, contractors, or other organizations, and no external service is offered.
+The team retains the existing license and copyright notices but does not publish its modifications on the internet.
+A reviewer claims that every modification to GPL software must immediately be made publicly available.
+
+#### Scenario F: The Reporting Component
+
+Ben modifies an Apache-2.0-licensed reporting component and includes it in a proprietary application delivered to customers.
+The team supplies the Apache 2.0 license text, preserves the applicable original notices, and includes the relevant attribution notices from the component's existing `NOTICE` file in the distribution.
+Modified source files carry prominent statements that GreenByte changed them.
+The team keeps its own application source private and claims no ownership of the original component.
+
+#### Scenario G: The Updated Exporter
+
+Nina changes several source files in an Apache-2.0-licensed exporter and distributes the modified source package to customers.
+She includes the Apache license, preserves applicable existing copyright and attribution notices, and carries over the relevant contents of its `NOTICE` file.
+The modified files contain no statements that they were changed.
+Nina considers a private Git history sufficient evidence of the modifications.
+
+#### Scenario H: A Small Open Source Project
+
+Three colleagues create a standalone C++ testing helper entirely from their own code.
+GreenByte owns the necessary rights and explicitly authorizes its release under the MIT license.
+The published repository includes the complete MIT license with the appropriate copyright notice.
+Another company uses the helper in a commercial product, retains the required notices, and does not publish its own product's source code or pay GreenByte a fee.
+One colleague wants to object because they expected commercial users to request separate permission.
+
+#### Your Review
+
+For each scenario, identify the license of the reused component or published helper and classify its type: **permissive**, **weak copyleft**, or **strong copyleft**. If no license is provided, record **no license / no reuse permission stated** instead of assigning an open source license type.
+Distinguish this component license from the license of the surrounding application. Not every category must appear in the scenarios.
+Briefly justify your classification, then decide whether the actions are acceptable under the stated license conditions or whether a mistake has been made.
+
+Use the following structure:
+
+| Scenario | License and type | Acceptable or mistake? | Reason and supporting license provision | Required correction, or why none is needed |
+| --- | --- | --- | --- | --- |
+| A | | | | |
+| B | | | | |
+| C | | | | |
+| D | | | | |
+| E | | | | |
+| F | | | | |
+| G | | | | |
+| H | | | | |
+
+Support your decisions with the relevant license wording or section number. A link alone is not an explanation.
+For a problematic scenario, propose a concrete correction that would allow the team to proceed.
+
+#### Reference Material
+
+Use these references when reviewing the scenarios:
+
+* [MIT license text](https://opensource.org/license/mit)
+* [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0), especially Section 4
+* [GNU GPL version 3](https://opensource.org/license/gpl-3.0), especially Sections 2, 5, and 6
+* [Repositories without a license](https://choosealicense.com/no-permission/)
+* [License comparison and copyleft categories](https://choosealicense.com/licenses/)
+
+
+## 🟡 Section II: Your First GitLab Pipeline
 
 In this exercise, you will create a continuous integration (CI) pipeline that automatically checks a small C++ implementation.
 You will trigger it by pushing a commit and by creating or updating a merge request (MR), then experience how a failing test provides feedback before a change is merged.
