@@ -206,7 +206,7 @@ Your task is to update the existing `.gitlab-ci.yml` file so that GitLab runs se
 
 ### 1. Read About GitLab Security Scanners
 
-Open the GitLab documentation and read the short introduction pages for:
+Open the GitLab documentation and read the introduction pages for:
 
 * Secret Detection:
   [https://docs.gitlab.com/user/application_security/secret_detection/pipeline/](https://docs.gitlab.com/user/application_security/secret_detection/pipeline/)
