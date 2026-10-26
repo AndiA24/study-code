@@ -20,7 +20,6 @@ First we need to install the necessary tools for this lab. This includes a code 
 
 ### Task Description
 
-Select the operating system you are using and follow the instructions to install it.
 Assumption: You have already installed MSYS2 and the UCRT64 environment on your system. If not, please refer to section III of [Lab_01](https://gitlab.com/braunagel.christian/study-code/-/blob/main/courses/coding-in-C/Lab_1/Lab_1.md?ref_type=heads) for installation instructions.
 
 #### Windows
@@ -77,14 +76,16 @@ Here is what each part means:
 
 Open the ```.clang-format``` file and adapt some basic settings. For example:
 ```yaml
-BasedOnStyle: LLVM
 IndentWidth: 4
 TabWidth: 4
 UseTab: Never
 ColumnLimit: 100
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Linux
 ```
-* Create a small C or C++ source file with intentionally inconsistent formatting, for example `main.cpp` which consists of only one line of code.
+* Create a small C or C++ source file with intentionally inconsistent formatting, for example `main.cpp` which consists of a main function with only one line of code.
+
+* You might need to edit the file in a simple text editor to make it look messy without getting it automatically formatted by the editor when saving.
+
 * Format this single file in place by running:
 ```bash
 clang-format -i main.cpp
@@ -148,12 +149,12 @@ Run `clang-tidy` from inside the `linting_sensor_project` folder.
 
 #### Windows PowerShell
 ```powershell
-Get-ChildItem -Recurse -Include *.cpp,*.hpp | ForEach-Object { clang-tidy --quiet --config-file=.clang-tidy $_.FullName -- -std=c++17 -Wall -Iinclude }
+Get-ChildItem -Recurse -Include *.cpp,*.hpp | ForEach-Object { clang-tidy --config-file=.clang-tidy $_.FullName -- -std=c++17 -Wall -Iinclude }
 ```
 
 #### Ubuntu/macOS
 ```bash
-clang-tidy --quiet --config-file=.clang-tidy src/*.cpp include/*.hpp -- -std=c++17 -Wall -Iinclude
+clang-tidy --config-file=.clang-tidy src/*.cpp include/*.hpp -- -std=c++17 -Wall -Iinclude
 ```
 
 Write down the reported warnings in a file called `linting_notes.md`.
@@ -187,30 +188,33 @@ Commit and push the pipeline update.
 Create a new file with a small formatting or linting problem and push it to the remote repository.
 The pipeline should fail and show the reported problems.
 
-## 🟡 Section III: GitLab Security Scanning
+## 🟡 Section III: Security Scanning with GitLab and Trivy
 
-In this section, you will extend the pipeline with GitLab-native security scanning.
-GitLab provides predefined CI/CD templates for common security checks, so you do not have to install and maintain separate scanner scripts yourself.
+In this section, you will extend the pipeline with security scanning.
+Use GitLab's predefined CI/CD templates for Secret Detection and SAST, and add a separate job using Trivy for dependency scanning.
+Trivy runs as a regular CI job and does not require GitLab Ultimate dependency scanning.
 
 You will enable:
 
-* Secret Detection
-* Dependency Scanning
-* Static Application Security Testing (SAST)
+* Secret Detection using a GitLab template
+* Static Application Security Testing (SAST) using a GitLab template
+* Dependency scanning using Trivy
 
 ### Task Description
 
 Use the GitLab repository from the previous sections.
 Your task is to update the existing `.gitlab-ci.yml` file so that GitLab runs security scans automatically in the pipeline.
 
-### 1. Read About GitLab Security Scanners
+### 1. Read About the Security Scanners
 
-Open the GitLab documentation and read the short introduction pages for:
+Read the documentation for:
 
 * Secret Detection:
   [https://docs.gitlab.com/user/application_security/secret_detection/pipeline/](https://docs.gitlab.com/user/application_security/secret_detection/pipeline/)
-* Dependency Scanning:
-  [https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/](https://docs.gitlab.com/user/application_security/dependency_scanning/dependency_scanning_sbom/)
+* Trivy filesystem scanning:
+  [https://trivy.dev/docs/latest/target/filesystem/](https://trivy.dev/docs/latest/target/filesystem/)
+* Trivy Python dependency detection:
+  [https://trivy.dev/docs/latest/coverage/language/python/](https://trivy.dev/docs/latest/coverage/language/python/)
 * SAST:
   [https://docs.gitlab.com/user/application_security/sast/](https://docs.gitlab.com/user/application_security/sast/)
 
@@ -229,6 +233,7 @@ requests==2.25.0
 ```
 
 Store it as `requirements.txt` in the repository root.
+These older versions are intentional training examples for finding known vulnerabilities.
 
 Add a small source file called `app.py` so that SAST has source code to inspect:
 
@@ -249,48 +254,79 @@ If you want to test secret detection, use only an obviously fake training value 
 ### 3. Include GitLab Native Security Templates
 
 Update `.gitlab-ci.yml`.
-Keep the formatting and linting jobs from the previous sections and add the GitLab security templates.
+Keep the formatting and linting jobs from the previous sections and include the GitLab security templates for Secret Detection and SAST:
 
 GitLab security scanning jobs use the `test` stage by default, so the pipeline must contain a `test` stage.
 
-### 4. Run and Inspect the Pipeline
+### 4. Add a Separate Trivy Dependency Scanning Job
 
-Commit and push the updated `.gitlab-ci.yml`, `requirements.txt`, `app.py`, and `security_notes.md`.
+Create a job called `trivy-dependencies` in `.gitlab-ci.yml`.
+The job should:
+
+* run in the `test` stage
+* use the official `aquasec/trivy` container image with a specific release tag
+* override the image entrypoint with `entrypoint: [""]` so GitLab can execute the job script
+* scan the repository's dependency files using `trivy fs --scanners vuln .`
+* save a JSON vulnerability report and a CycloneDX Software Bill of Materials (SBOM)
+* fail when vulnerabilities with severity `HIGH` or `CRITICAL` are found
+* upload both report files as ordinary job artifacts, even when the job fails, using `artifacts: when: always` and `paths`
+
+Use these commands in the job script, in this order:
+
+```bash
+trivy --version
+trivy fs --scanners vuln --exit-code 0 --format json --output trivy-report.json .
+trivy fs --format cyclonedx --exit-code 0 --output trivy-sbom.cdx.json .
+trivy fs --scanners vuln --severity HIGH,CRITICAL --exit-code 1 .
+```
+
+The first two scans save reports before the final scan checks the severity threshold.
+`--exit-code 1` makes the job fail when matching vulnerabilities are found; scanner execution errors also fail the job.
+
+For this example, Trivy reads the exact package versions from `requirements.txt` without installing the application.
+It only detects dependencies listed in that file. Indirect (transitive) dependencies must also be listed to be scanned, for example by generating a complete requirements file with `pip-compile`.
+See the [Trivy Python documentation](https://trivy.dev/docs/latest/coverage/language/python/) for this limitation.
+
+Answer in `security_notes.md`:
+
+* What is the difference between scanning source code with SAST and scanning dependencies with Trivy?
+* Why are the report commands executed before the command with `--exit-code 1`?
+* What information could be missing when scanning only the two-line `requirements.txt`?
+
+### 5. Run and Inspect the Pipeline
+
+Commit and push the updated files.
 
 Open GitLab and inspect:
 
-* `Build` > `Pipelines`
 * the jobs created by the included security templates
+* the separate `trivy-dependencies` job
 * the job logs of the security scanners
 * the security findings, if your GitLab project shows a security or vulnerability report
 
-The dependency scanning job can also create a CycloneDX Software Bill of Materials (SBOM).
-Open the artifacts of the dependency scanning job and look for a file named similar to:
+Open the artifacts of `trivy-dependencies` and inspect:
 
 ```text
-gl-sbom-<package-type>-<package-manager>.cdx.json
+trivy-report.json
+trivy-sbom.cdx.json
 ```
 
-For the Python dependency example, the exact name depends on the analyzer output.
-If no SBOM is created, check whether the repository contains a supported dependency file such as `requirements.txt`.
+The JSON report contains vulnerability findings; the SBOM lists the detected packages and versions.
+Inspect these ordinary artifacts through the job page. They are not automatically displayed as a native GitLab dependency scanning vulnerability report.
+With the intentionally old dependencies, the Trivy job is expected to fail if the database reports `HIGH` or `CRITICAL` vulnerabilities.
+If a report is missing, inspect the job log for scanner errors and verify that `requirements.txt` is committed and artifact upload uses `when: always`.
 
 Answer in `security_notes.md`:
 
 * Which new jobs were added by the templates?
+* Which job did you add manually for dependency scanning?
 * Which stage did the security jobs run in?
 * Did the pipeline pass or fail?
 * Where can you see the scanner results in GitLab?
 * Was an SBOM artifact created? If yes, what is the file name?
 * Which dependencies are listed in the SBOM?
+* Which vulnerabilities caused the Trivy job to fail, and which fixed versions does the report suggest?
 
-### 5. Compare Manual Jobs and Native Templates
-
-Answer in `security_notes.md`:
-
-* How is the GitLab template approach different from writing your own shell commands?
-* Why is it useful that GitLab maintains these scanner templates?
-* What are the limits of automated security scanning?
-* Why should security scanner findings still be reviewed by a developer?
 
 ## Section IV: Unit Testing with GoogleTest, CMake, and a Pipeline
 
